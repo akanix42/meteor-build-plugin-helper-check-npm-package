@@ -1,0 +1,20 @@
+{
+  "name": "meteor-build-plugin-helper-check-npm-package",
+  "version": "0.0.1",
+  "author": "Nathan Reid <nathan-code@nathantreid.com",
+  "license": "ISC",
+  "main": "dist/check-npm-package.js",
+  "devDependencies": {
+    "babel-preset-env": "^1.1.8",
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-build-babel-standard": "^0.0.2",
+    "mocha": "^3.2.0"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "hookable-logger": "^0.0.1",
+    "meteor-build-plugin-helper-path-helpers": "^0.0.1",
+    "semver": "^5.3.0"
+  }
+}
