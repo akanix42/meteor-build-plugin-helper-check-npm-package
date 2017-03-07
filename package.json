@@ -1,6 +1,6 @@
 {
   "name": "meteor-build-plugin-helper-check-npm-package",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": "Nathan Reid <nathan-code@nathantreid.com",
   "license": "ISC",
   "main": "dist/check-npm-package.js",

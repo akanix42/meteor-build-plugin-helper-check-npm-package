@@ -30,25 +30,39 @@ var _meteorBuildPluginHelperPathHelpers2 = _interopRequireDefault(_meteorBuildPl
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var VERSION_RESULT = {
+  SATISFIED: 0,
+  MISMATCH: 1,
+  MISSING: 2
+};
 function checkNpmPackage(packageWithVersion, requestor) {
+  var suppressLogs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
   var _packageWithVersion$s = packageWithVersion.split('@'),
       _packageWithVersion$s2 = _slicedToArray(_packageWithVersion$s, 2),
       packageName = _packageWithVersion$s2[0],
       packageVersion = _packageWithVersion$s2[1];
 
   if (!verifyPackageExists(packageName, packageVersion, requestor)) {
+    if (!suppressLogs) _hookableLogger2.default.error(_colors2.default.red.bold(`Error checking npm package: ${packageName}@${packageVersion} (requested by ${requestor}): package not found. Please ensure you have installed the package; here is the command:\n meteor npm install ${packageName}@${packageVersion} --save-dev\n or \n meteor yarn ${packageName}@${packageVersion}`));
     return false;
   }
 
-  return checkNpmVersion(packageName, packageVersion, requestor);
+  var versionCheck = checkNpmVersion(packageName, packageVersion, requestor);
+  if (versionCheck.result === VERSION_RESULT.MISSING) {
+    if (!suppressLogs) _hookableLogger2.default.error(_colors2.default.red.bold(`Error checking package: ${packageName}@${packageVersion} (requested by ${requestor}): ${versionCheck.err.message}`));
+    return false;
+  }
+  if (versionCheck.result === VERSION_RESULT.MISMATCH) {
+    if (!suppressLogs) _hookableLogger2.default.warn(_colors2.default.yellow.bold(`WARNING: version mismatch for ${packageName}; installed version is ${versionCheck.currentVersion}, but version ${packageVersion} is requested by ${requestor})`));
+  }
+
+  return true;
 }
 
-function verifyPackageExists(packageName, packageVersion, requestor) {
+function verifyPackageExists(packageName) {
   var packagePath = `${_meteorBuildPluginHelperPathHelpers2.default.basePath}/node_modules/${packageName}`;
   var doesPackageExist = _fs2.default.existsSync(packagePath);
-  if (!doesPackageExist) {
-    _hookableLogger2.default.error(_colors2.default.red.bold(`Error checking npm package: ${packageName}@${packageVersion} (requested by ${requestor}): package not found. Please ensure you have installed the package; here is the command:\n meteor npm install ${packageName}@${packageVersion} --save-dev\n or \n meteor yarn ${packageName}@${packageVersion}`));
-  }
 
   return doesPackageExist;
 }
@@ -57,14 +71,12 @@ function checkNpmVersion(name, actualVersion, requestor) {
   try {
     var currentVersion = require(`${name}/package.json`).version;
     if (_semver2.default.satisfies(currentVersion, actualVersion)) {
-      return true;
+      return { result: VERSION_RESULT.SATISFIED };
     } else {
-      _hookableLogger2.default.warn(_colors2.default.yellow.bold(`WARNING: version mismatch for ${name}; installed version is ${currentVersion}, but version ${actualVersion} is requested by ${requestor})`));
-      return true;
+      return { result: VERSION_RESULT.MISMATCH, currentVersion };
     }
-  } catch (e) {
-    _hookableLogger2.default.error(_colors2.default.red.bold(`Error checking package: ${name}@${actualVersion} (requested by ${requestor}): ${e.message}`));
-    return false;
+  } catch (err) {
+    return { result: VERSION_RESULT.MISSING, err };
   }
 }
 //# sourceMappingURL=check-npm-package.js.map
